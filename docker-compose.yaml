@@ -1,0 +1,38 @@
+services:
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - ./conf.d:/etc/nginx/conf.d:ro
+    depends_on:
+      - jenkins
+      - gitlab
+
+  jenkins:
+    image: jenkins/jenkins:lts-jdk21
+    container_name: jenkins
+    restart: always
+    ports:
+      - "8080:8080"
+
+  gitlab:
+    image: gitlab/gitlab-ce:18.6.0-ce.0
+    container_name: gitlab
+    restart: always
+    hostname: 'gitlab.internal.skocev.com'
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        # Add any other gitlab.rb configuration here, each on its own line
+        external_url 'http://gitlab.internal.skocev.com:8081'
+    ports:
+      - '8081:8081'
+      #- '443:443'
+      - '22:22'
+    volumes:
+      - '$GITLAB_HOME/config:/etc/gitlab'
+      - '$GITLAB_HOME/logs:/var/log/gitlab'
+      - '$GITLAB_HOME/data:/var/opt/gitlab'
+    shm_size: '256m'
